@@ -90,6 +90,7 @@ class FAISS(VectorStore):
     @property
     def embeddings(self) -> Optional[Embeddings]:
         # TODO: Accept embeddings object directly
+        
         return None
 
     def __add(
