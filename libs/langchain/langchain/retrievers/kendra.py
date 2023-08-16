@@ -171,7 +171,7 @@ class ResultItem(BaseModel, ABC, extra=Extra.allow):
         return {attr.Key: attr.Value.value for attr in (self.DocumentAttributes or [])}
 
     def to_doc(
-        self, page_content_formatter: Callable[["ResultItem"], str] = combined_text
+            self, page_content_formatter: Callable[["ResultItem"], str] = combined_text
     ) -> Document:
         """Converts this item to a Document."""
         page_content = page_content_formatter(self)
@@ -223,8 +223,8 @@ class QueryResultItem(ResultItem):
 
     def get_excerpt(self) -> str:
         if (
-            self.AdditionalAttributes
-            and self.AdditionalAttributes[0].Key == "AnswerText"
+                self.AdditionalAttributes
+                and self.AdditionalAttributes[0].Key == "AnswerText"
         ):
             excerpt = self.get_attribute_value()
         elif self.DocumentExcerpt:
@@ -406,10 +406,10 @@ class AmazonKendraRetriever(BaseRetriever):
         return top_docs
 
     def _get_relevant_documents(
-        self,
-        query: str,
-        *,
-        run_manager: CallbackManagerForRetrieverRun,
+            self,
+            query: str,
+            *,
+            run_manager: CallbackManagerForRetrieverRun,
     ) -> List[Document]:
         """Run search on Kendra index and get top k documents
 
