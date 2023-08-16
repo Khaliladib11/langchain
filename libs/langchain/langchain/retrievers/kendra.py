@@ -325,6 +325,19 @@ class AmazonKendraRetriever(BaseRetriever):
     client: Any
     user_context: Optional[Dict] = None
 
+    @property
+    def top_k(self):
+        return self._top_k
+
+    @top_k.setter
+    def top_k(self, value):
+        if not isinstance(value, int):
+            raise ValueError(f"top_k ({type(value)}) must be an integer.")
+        if value < 1:
+            raise ValueError(f"top_k ({value}) cannot be negative.")
+
+        self._top_k = value
+
     @validator("_top_k")
     def validate_top_k(cls, value: int) -> int:
         if value < 0:
