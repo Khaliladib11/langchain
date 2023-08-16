@@ -319,13 +319,13 @@ class AmazonKendraRetriever(BaseRetriever):
     index_id: str
     region_name: Optional[str] = None
     credentials_profile_name: Optional[str] = None
-    top_k: int = 3
+    _top_k: int = 3
     attribute_filter: Optional[Dict] = None
     page_content_formatter: Callable[[ResultItem], str] = combined_text
     client: Any
     user_context: Optional[Dict] = None
 
-    @validator("top_k")
+    @validator("_top_k")
     def validate_top_k(cls, value: int) -> int:
         if value < 0:
             raise ValueError(f"top_k ({value}) cannot be negative.")
@@ -368,7 +368,7 @@ class AmazonKendraRetriever(BaseRetriever):
         kendra_kwargs = {
             "IndexId": self.index_id,
             "QueryText": query.strip(),
-            "PageSize": self.top_k,
+            "PageSize": self._top_k,
         }
         if self.attribute_filter is not None:
             kendra_kwargs["AttributeFilter"] = self.attribute_filter
