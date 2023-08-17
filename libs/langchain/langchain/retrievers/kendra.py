@@ -337,7 +337,9 @@ class AmazonKendraRetriever(BaseRetriever):
 
     @validator("top_k")
     def validate_top_k(cls, value: int) -> int:
-        if value < 0:
+        if not isinstance(value, int):
+            raise ValueError(f"top_k ({value}) must be an integer.")
+        if value < 1:
             raise ValueError(f"top_k ({value}) cannot be negative.")
         return value
 
