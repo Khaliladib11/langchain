@@ -2,10 +2,9 @@ import re
 from abc import ABC, abstractmethod
 from typing import Any, Callable, Dict, List, Literal, Optional, Sequence, Union
 
-from pydantic import BaseModel, Extra, root_validator, validator
-
 from langchain.callbacks.manager import CallbackManagerForRetrieverRun
 from langchain.docstore.document import Document
+from langchain.pydantic_v1 import BaseModel, Extra, root_validator, validator
 from langchain.schema import BaseRetriever
 
 
@@ -49,7 +48,8 @@ DocumentAttributeValueType = Union[str, int, List[str], None]
 """Possible types of a DocumentAttributeValue. Dates are also represented as str."""
 
 
-class Highlight(BaseModel, extra=Extra.allow):
+# Unexpected keyword argument "extra" for "__init_subclass__" of "object"
+class Highlight(BaseModel, extra=Extra.allow):  # type: ignore[call-arg]
     """
     Represents the information that can be
     used to highlight key words in the excerpt.
@@ -65,7 +65,8 @@ class Highlight(BaseModel, extra=Extra.allow):
     """The highlight type: STANDARD or THESAURUS_SYNONYM."""
 
 
-class TextWithHighLights(BaseModel, extra=Extra.allow):
+# Unexpected keyword argument "extra" for "__init_subclass__" of "object"
+class TextWithHighLights(BaseModel, extra=Extra.allow):  # type: ignore[call-arg]
     """Text with highlights."""
 
     Text: str
@@ -74,14 +75,18 @@ class TextWithHighLights(BaseModel, extra=Extra.allow):
     """The highlights."""
 
 
-class AdditionalResultAttributeValue(BaseModel, extra=Extra.allow):
+# Unexpected keyword argument "extra" for "__init_subclass__" of "object"
+class AdditionalResultAttributeValue(  # type: ignore[call-arg]
+    BaseModel, extra=Extra.allow
+):
     """The value of an additional result attribute."""
 
     TextWithHighlightsValue: TextWithHighLights
     """The text with highlights value."""
 
 
-class AdditionalResultAttribute(BaseModel, extra=Extra.allow):
+# Unexpected keyword argument "extra" for "__init_subclass__" of "object"
+class AdditionalResultAttribute(BaseModel, extra=Extra.allow):  # type: ignore[call-arg]
     """An additional result attribute."""
 
     Key: str
@@ -95,7 +100,8 @@ class AdditionalResultAttribute(BaseModel, extra=Extra.allow):
         return self.Value.TextWithHighlightsValue.Text
 
 
-class DocumentAttributeValue(BaseModel, extra=Extra.allow):
+# Unexpected keyword argument "extra" for "__init_subclass__" of "object"
+class DocumentAttributeValue(BaseModel, extra=Extra.allow):  # type: ignore[call-arg]
     """The value of a document attribute."""
 
     DateValue: Optional[str]
@@ -125,7 +131,8 @@ class DocumentAttributeValue(BaseModel, extra=Extra.allow):
         return None
 
 
-class DocumentAttribute(BaseModel, extra=Extra.allow):
+# Unexpected keyword argument "extra" for "__init_subclass__" of "object"
+class DocumentAttribute(BaseModel, extra=Extra.allow):  # type: ignore[call-arg]
     """A document attribute."""
 
     Key: str
@@ -134,7 +141,8 @@ class DocumentAttribute(BaseModel, extra=Extra.allow):
     """The value of the attribute."""
 
 
-class ResultItem(BaseModel, ABC, extra=Extra.allow):
+# Unexpected keyword argument "extra" for "__init_subclass__" of "object"
+class ResultItem(BaseModel, ABC, extra=Extra.allow):  # type: ignore[call-arg]
     """Abstract class that represents a result item."""
 
     Id: Optional[str]
@@ -171,7 +179,7 @@ class ResultItem(BaseModel, ABC, extra=Extra.allow):
         return {attr.Key: attr.Value.value for attr in (self.DocumentAttributes or [])}
 
     def to_doc(
-            self, page_content_formatter: Callable[["ResultItem"], str] = combined_text
+        self, page_content_formatter: Callable[["ResultItem"], str] = combined_text
     ) -> Document:
         """Converts this item to a Document."""
         page_content = page_content_formatter(self)
@@ -223,8 +231,8 @@ class QueryResultItem(ResultItem):
 
     def get_excerpt(self) -> str:
         if (
-                self.AdditionalAttributes
-                and self.AdditionalAttributes[0].Key == "AnswerText"
+            self.AdditionalAttributes
+            and self.AdditionalAttributes[0].Key == "AnswerText"
         ):
             excerpt = self.get_attribute_value()
         elif self.DocumentExcerpt:
@@ -254,7 +262,8 @@ class RetrieveResultItem(ResultItem):
         return self.Content or ""
 
 
-class QueryResult(BaseModel, extra=Extra.allow):
+# Unexpected keyword argument "extra" for "__init_subclass__" of "object"
+class QueryResult(BaseModel, extra=Extra.allow):  # type: ignore[call-arg]
     """
     Represents an Amazon Kendra Query API search result, which is composed of:
         * Relevant suggested answers: either a text excerpt or table excerpt.
@@ -266,7 +275,8 @@ class QueryResult(BaseModel, extra=Extra.allow):
     """The result items."""
 
 
-class RetrieveResult(BaseModel, extra=Extra.allow):
+# Unexpected keyword argument "extra" for "__init_subclass__" of "object"
+class RetrieveResult(BaseModel, extra=Extra.allow):  # type: ignore[call-arg]
     """
     Represents an Amazon Kendra Retrieve API search result, which is composed of:
         * relevant passages or text excerpts given an input query.
@@ -319,26 +329,13 @@ class AmazonKendraRetriever(BaseRetriever):
     index_id: str
     region_name: Optional[str] = None
     credentials_profile_name: Optional[str] = None
-    _top_k: int = 3
+    top_k: int = 3
     attribute_filter: Optional[Dict] = None
     page_content_formatter: Callable[[ResultItem], str] = combined_text
     client: Any
     user_context: Optional[Dict] = None
 
-    @property
-    def top_k(self):
-        return self._top_k
-
-    @top_k.setter
-    def top_k(self, value):
-        if not isinstance(value, int):
-            raise ValueError(f"top_k ({type(value)}) must be an integer.")
-        if value < 1:
-            raise ValueError(f"top_k ({value}) cannot be negative.")
-
-        self._top_k = value
-
-    @validator("_top_k")
+    @validator("top_k")
     def validate_top_k(cls, value: int) -> int:
         if value < 0:
             raise ValueError(f"top_k ({value}) cannot be negative.")
@@ -381,7 +378,7 @@ class AmazonKendraRetriever(BaseRetriever):
         kendra_kwargs = {
             "IndexId": self.index_id,
             "QueryText": query.strip(),
-            "PageSize": self._top_k,
+            "PageSize": self.top_k,
         }
         if self.attribute_filter is not None:
             kendra_kwargs["AttributeFilter"] = self.attribute_filter
@@ -406,10 +403,10 @@ class AmazonKendraRetriever(BaseRetriever):
         return top_docs
 
     def _get_relevant_documents(
-            self,
-            query: str,
-            *,
-            run_manager: CallbackManagerForRetrieverRun,
+        self,
+        query: str,
+        *,
+        run_manager: CallbackManagerForRetrieverRun,
     ) -> List[Document]:
         """Run search on Kendra index and get top k documents
 
